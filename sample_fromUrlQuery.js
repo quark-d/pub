@@ -1,3 +1,4 @@
+//.../sample.html?markers=[{%22x%22:0.5,%22y%22:0.5},{%22x%22:0.7,%22y%22:0.2}]
 // URLクエリ文字列からパラメータを取得する関数
 function getQueryParams() {
     const params = new URLSearchParams(window.location.search);
