@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sample Page</title>
+    <script>
+        function getQueryString(parameter) {
+            var urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(parameter);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var user = getQueryString('user');
+            console.log(user); // 出力例: JohnDoe
+            // 必要に応じてHTMLの他の部分を更新
+        });
+    </script>
+</head>
+<body>
+    <h1>Sample Page</h1>
+    <p id="user-info"></p>
+</body>
+</html>
