@@ -176,6 +176,138 @@ Sub ProcessTableData()
         Next shp
     Next sheet
 End Sub
-   
+```
+```vb
+Public searchColumn1 As String
+
+Sub ShowSelectionForm()
+    searchColumn1 = ""
+    frmSelection.Show
+    If searchColumn1 <> "" Then
+        ProcessTableData
+    Else
+        MsgBox "No selection made.", vbExclamation
+    End If
+End Sub
+```
+```vb
+' clsAddress クラスモジュール
+Public sheetName As String
+Public items As Collection
+
+Private Sub Class_Initialize()
+    Set items = New Collection
+End Sub
+```
+```vb
+' clsOneRecord クラスモジュール
+Public column1 As String
+Public column2 As Collection ' Collection of clsAddress
+
+Private Sub Class_Initialize()
+    Set column2 = New Collection
+End Sub
+```
+```vb
+' frmSelection
+Option Explicit
+Const ADDRESS_DELIMITER As String = "#" ' 必要に応じて変更
+Const FIRST_DELIMITER As String = "." ' 必要に応じて変更
+Const SECOND_DELIMITER As String = ";" ' 必要に応じて変更
+Const COLUMN_NAME1 As String = "ID" ' 実際の列名に置き換えてください
+Const COLUMN_NAME2 As String = "item3" ' 実際の列名に置き換えてください
+Const SHEET_NAME1 As String = "Sheet2" ' 実際のシート名に置き換えてください
+Const TABLE_NAME1 As String = "tbl_sht2" ' 実際のテーブル名に置き換えてください
+
+Private Sub UserForm_Initialize()
+    Dim ws As Worksheet
+    Dim tbl As ListObject
+    Dim colIndex1 As Long
+    Dim cell As Range
+    Dim topPosition As Single
+    Dim frameHeight As Single
+
+    ' 初期化
+    Set ws = ThisWorkbook.Sheets(SHEET_NAME1)
+    Set tbl = ws.ListObjects(TABLE_NAME1)
+    colIndex1 = tbl.ListColumns(COLUMN_NAME1).Index
+    
+    ' ラジオボタンの配置位置
+    topPosition = 10
+    frameHeight = 0
+
+    ' COLUMN_NAME1の値をラジオボタンとして追加
+    For Each cell In tbl.ListColumns(colIndex1).DataBodyRange.Cells
+        If cell.Value <> "" Then
+            Dim optButton As MSForms.OptionButton
+            Set optButton = Me.Frame1.Controls.Add("Forms.OptionButton.1")
+            optButton.Caption = cell.Value
+            optButton.Left = 10
+            optButton.Top = topPosition
+            optButton.Width = 200
+            topPosition = topPosition + 20
+            frameHeight = frameHeight + 20
+        End If
+    Next cell
+    
+    ' フレームのサイズを調整
+    Me.Frame1.Height = frameHeight + 20 ' 余白を追加
+    Me.Height = Me.Frame1.Top + Me.Frame1.Height + 40 ' フォームの高さを調整
+End Sub
+
+Private Sub CommandButton1_Click()
+    Dim ctrl As Control
+    For Each ctrl In Me.Frame1.Controls
+        If TypeName(ctrl) = "OptionButton" And ctrl.Value = True Then
+            searchColumn1 = ctrl.Caption
+            Exit For
+        End If
+    Next ctrl
+    Me.Hide
+End Sub
+
+'Private Sub UserForm_Initialize()
+'    Dim ws As Worksheet
+'    Dim tbl As ListObject
+'    Dim colIndex1 As Long
+'    Dim cell As Range
+'    Dim topPosition As Single
+'
+'    ' 初期化
+'    Set ws = ThisWorkbook.Sheets(SHEET_NAME1)
+'    Set tbl = ws.ListObjects(TABLE_NAME1)
+'    colIndex1 = tbl.ListColumns(COLUMN_NAME1).Index
+'
+'    ' ラジオボタンの配置位置
+'    topPosition = 20
+'
+'    ' COLUMN_NAME1の値をラジオボタンとして追加
+'    For Each cell In tbl.ListColumns(colIndex1).DataBodyRange.Cells
+'        If cell.Value <> "" Then
+'            Dim optButton As OptionButton
+'            Set optButton = Me.Frame1.Controls.Add("Forms.OptionButton.1", "name", True)
+'            optButton.Caption = cell.Value
+'            optButton.Left = 10
+'            optButton.Top = topPosition
+'            optButton.Width = 200
+'            topPosition = topPosition + 20
+'        End If
+'    Next cell
+'End Sub
+'
+'Private Sub CommandButton1_Click()
+'    Dim ctrl As Control
+'    For Each ctrl In Me.Frame1.Controls
+'        If TypeName(ctrl) = "OptionButton" And ctrl.Value = True Then
+'            searchColumn1 = ctrl.Caption
+'            Exit For
+'        End If
+'    Next ctrl
+'    Me.Hide
+'End Sub
+'
 
 ```
+
+
+
