@@ -44,7 +44,6 @@ Azure AD は、Microsoft Entra ID に名前が[変更](https://learn.microsoft.c
 
 作成した
 シークレットの値は安全な場所に保存する。後で必要になる。
-![alt text](img_created_certificate_secret.png)
 
 ## アクセストークンの取得
 
