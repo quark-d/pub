@@ -41,6 +41,7 @@ Azure AD は、Microsoft Entra ID に名前が[変更](https://learn.microsoft.c
 ![alt text](img_ClientCredentials.png)
 
 「Add a certificate or secret」で作成する
+![alt text](img_created_certificate_secret.png)
 
 作成した
 シークレットの値は安全な場所に保存する。後で必要になる。
