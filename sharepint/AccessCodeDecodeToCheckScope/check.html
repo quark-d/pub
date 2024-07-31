@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Decode JWT</title>
+</head>
+<body>
+    <h1>Decode JWT</h1>
+    <input type="text" id="token" placeholder="Enter your JWT here" style="width: 100%;">
+    <button onclick="decodeJWT()">Decode</button>
+    <pre id="result"></pre>
+
+    <script>
+        function decodeJWT() {
+            const token = document.getElementById('token').value;
+            const parts = token.split('.');
+            if (parts.length !== 3) {
+                alert('Invalid JWT');
+                return;
+            }
+
+            const payload = JSON.parse(atob(parts[1]));
+            document.getElementById('result').innerText = JSON.stringify(payload, null, 2);
+
+            if (payload.scp) {
+                console.log('Scopes:', payload.scp);
+            } else {
+                console.log('No scopes found');
+            }
+        }
+    </script>
+</body>
+</html>

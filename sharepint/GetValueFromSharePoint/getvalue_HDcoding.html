@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Get SharePoint List Item</title>
+</head>
+<body>
+    <h1>Get SharePoint List Item</h1>
+    <button onclick="getListItem()">Get List Item</button>
+    <div id="result"></div>
+
+    <script>
+        const accessToken = "eyJ0eXAiOiJKV1QiLCJub25jZSI6IjJUREhwdXAyelpXMkZjbFQ5NElQZlZNY01WNkdUaUZWcGdfR2hXY3NwRUEiLCJhbGciOiJSUzI1NiIsIng1dCI6Ik1HTHFqOThWTkxvWGFGZnBKQ0JwZ0I0SmFLcyIsImtpZCI6Ik1HTHFqOThWTkxvWGFGZnBKQ0JwZ0I0SmFLcyJ9.eyJhdWQiOiJodHRwczovL2dyYXBoLm1pY3Jvc29mdC5jb20iLCJpc3MiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC82MzZjYTQ1Zi1hMzQ3LTQzYTEtYTc4Zi04ZDU0YWJkNDlkZWIvIiwiaWF0IjoxNzIyNDI5MjI1LCJuYmYiOjE3MjI0MjkyMjUsImV4cCI6MTcyMjQzMzEyNSwiYWlvIjoiRTJkZ1lOaGk0WEQrVWRsVHJ5cGxoWXhIc2x2MUFBPT0iLCJhcHBfZGlzcGxheW5hbWUiOiJUZXN0QXBpVGVzdEZvclNoYXJlcG9pb250IiwiYXBwaWQiOiJhYzQ3YmYzOC0zNjRlLTRkMDAtYTg2OS0xZjFiYzEwYzY4ZjQiLCJhcHBpZGFjciI6IjEiLCJpZHAiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC82MzZjYTQ1Zi1hMzQ3LTQzYTEtYTc4Zi04ZDU0YWJkNDlkZWIvIiwiaWR0eXAiOiJhcHAiLCJvaWQiOiJiMWM0YWU5Yy05MzMzLTRlNDItOTQ4My05OTE2MWQ1Nzc1MjMiLCJyaCI6IjAuQVdvQVg2UnNZMGVqb1VPbmo0MVVxOVNkNndNQUFBQUFBQUFBd0FBQUFBQUFBQUJxQUFBLiIsInN1YiI6ImIxYzRhZTljLTkzMzMtNGU0Mi05NDgzLTk5MTYxZDU3NzUyMyIsInRlbmFudF9yZWdpb25fc2NvcGUiOiJKUFIiLCJ0aWQiOiI2MzZjYTQ1Zi1hMzQ3LTQzYTEtYTc4Zi04ZDU0YWJkNDlkZWIiLCJ1dGkiOiJzS2IySmh3N25rYTZuQWZySGE4TEFBIiwidmVyIjoiMS4wIiwid2lkcyI6WyIwOTk3YTFkMC0wZDFkLTRhY2ItYjQwOC1kNWNhNzMxMjFlOTAiXSwieG1zX2lkcmVsIjoiNyAyIiwieG1zX3RjZHQiOjE3MTg3MTg1ODN9.aankWmcZVVJXZ0PBVnWRmacI2gs1xJ5jNjabqsKN5yefwG0MmKy_fdkdNkoO8BeI571aA6YhEfEIw5m1Io8GiIKmmWMIgTOEqsyFRcznYfi8M2k_nRxUkhrUd0LdrcqtTcNyklFKClsQXq898DZM4FG9dPlA4Nrl_rT8ZlhCEx2eWrL-QF3VHXdkrKaljqqqIBbILxsxrGIpirFJUT_s8a0PG0a2I72tgKNThiJRhUQaaN9AR0W4jACp_pT3SbfMQYg_yr2LHF9WTXhS3Xh3-bTLOEEe3BPSHyxDeucngfWBcOBl7pxjcgMllpbVNXMpAKMubB7WCay3K4wUhK6bEQ";
+        // const clientId = "ac47bf38-364e-4d00-a869-1f1bc10c68f4"; // Azure ADアプリケーションのクライアントID
+        // const tenantId = "636ca45f-a347-43a1-a78f-8d54abd49deb"; // Azure ADテナントID
+        // const redirectUri = "http://localhost:3000/index.html"; // リダイレクトURI
+        const siteUrl = "https://violetnearby.sharepoint.com/sites/allcompany"; // SharePointサイトのURL
+        const listName = "01"; // リスト名
+        const columnName1 = "作業項目"; // 検索する列の名前
+        const columnName2 = "説明"; // 取得する列の名前
+        const queryValue = "step1"; // 検索する値
+        
+        
+        async function getListItem() {
+            const url = `${siteUrl}/_api/web/lists/getbytitle('${listName}')/items?$filter=${columnName1} eq '${queryValue}'`;
+
+            try {
+                const response = await fetch(url, {
+                    method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${accessToken}`,
+                        "Accept": "application/json;odata=verbose"
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.d.results.length > 0) {
+                        document.getElementById("result").innerText = `Value in ${columnName2}: ${data.d.results[0][columnName2]}`;
+                    } else {
+                        document.getElementById("result").innerText = "No matching item found.";
+                    }
+                } else {
+                    throw new Error(`Failed to get list items: ${response.statusText}`);
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                document.getElementById("result").innerText = `Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
