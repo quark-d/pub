@@ -57,22 +57,120 @@ Option Explicit
 '    shape.Name = shapeID ' シェイプ名を設定
 '    shape.TextFrame2.TextRange.Text = position
 'End Sub
+'Public Sub DrowShapes(configShape As ConfigShapes, configPosition As ConfigPositions, positionString As Variant, Optional delimiter As String = "/")
+'    Dim ws As Worksheet
+'    Dim tbl As ListObject
+'    Dim positionList As Collection
+'    Dim row As ListRow
+'    Dim positions() As String
+'    Dim individualPosition As Variant
+'    Dim positionParts() As String
+'    Dim i As Integer
+'
+'    Call DrowStandby(configShape, configPosition, positionList)
+'
+'    ' シートとテーブルの設定
+'    Set ws = ThisWorkbook.Sheets("map")
+'    Set tbl = ws.ListObjects("tbl_maps")
+'
+'    ' テーブルの各行をループ
+'    For Each row In tbl.ListRows
+'        ' addr 列から位置情報を取得
+'        positions = Split(row.Range(tbl.ListColumns("addr").Index).value, ":")
+'
+'        ' それぞれの位置をループして DrowPosition を呼び出す
+'        For i = LBound(positions) To UBound(positions)
+'            individualPosition = positions(i)
+'            ' DrowPosition を呼び出す
+'            Call DrowShape(configShape, configPosition, CStr(individualPosition))
+'        Next i
+'    Next row
+'
+'End Sub
 
-
-Public Sub DrowShapes(configShape As ConfigShapes, configPosition As ConfigPositions, positionList As Collection)
+Public Sub DrowShapes(configShape As ConfigShapes, configPosition As ConfigPositions, positionList As Collection, Optional delimiter As String = "/")
     Dim individualPosition As Variant
     
+    ' 準備関数の呼び出し
     Call DrowStandby(configShape, configPosition, positionList)
     
-    ' コレクション内のすべての位置に対して DrowPosition を呼び出す
+    ' 位置リストをループして DrowShape を呼び出す
     For Each individualPosition In positionList
-        Call DrowShape(configShape, configPosition, individualPosition)
+        ' DrowShape を呼び出す
+        Call DrowShape(configShape, configPosition, CStr(individualPosition), delimiter)
     Next individualPosition
 End Sub
 
+
+'Private Sub DrowShape(configShape As ConfigShapes, configPosition As ConfigPositions, positionString As Variant, Optional delimiter As String = "/")
+'    Dim ws As Worksheet
+'    Dim labelName As String
+'    Dim sheetName As String
+'    Dim position As String
+'    Dim shapeID As String
+'    Dim xPos As Double
+'    Dim yPos As Double
+'    Dim redValue As Integer
+'    Dim greenValue As Integer
+'    Dim blueValue As Integer
+'    Dim shapeDict As Dictionary
+'    Dim existingShapes As Collection
+'    Dim existingShape As shape
+'    Dim shp As shape
+'
+'    ' 位置情報を分解
+'    sheetName = Split(positionString, delimiter)(0)
+'    position = Split(positionString, delimiter)(1)
+'    shapeID = "pos_" & sheetName & "_" & position
+'    labelName = shapeID & "_lbl"
+'
+'    ' 既存の "pos_" プレフィックスのオートシェイプリストを取得
+'    Set existingShapes = GetAutoShapeListPosition()
+'
+'    ' ConfigPositions から座標と色の情報を取得
+'    configPosition.AllocateShapeAttribute shapeID, xPos, yPos, redValue, greenValue, blueValue
+'
+'
+'    ' 該当シートの確認または作成
+'    On Error Resume Next
+'    Set ws = ThisWorkbook.Sheets(sheetName)
+'    If ws Is Nothing Then
+'        Set ws = ThisWorkbook.Sheets.Add
+'        ws.Name = sheetName
+'    End If
+'    On Error GoTo 0
+'
+'    ' ConfigShapes の設定を取得
+'    Set shapeDict = configShape.GetConfigShapePosition()
+'
+'
+'    ' すでに描画されているかをチェック
+'    Set existingShape = Nothing
+'    For Each shp In existingShapes
+'        If shp.Name = shapeID Then
+'            Set existingShape = shp
+'            ' 背景色のみ変更
+'            shp.Fill.ForeColor.RGB = RGB(redValue, greenValue, blueValue)
+'
+'            ' ラベルとコネクタを描画
+'            On Error Resume Next ' エラー処理を追加
+'            Call DrowLabel(ws, shapeDict, labelName, shp.left, shp.top)
+'            Call DrowConnection(ws, shp, ws.Shapes(labelName))
+'            On Error GoTo 0
+'
+'            Exit Sub ' 処理を終了
+'        End If
+'    Next shp
+'
+'          ' positionとlabelを描画し、直線で結ぶ
+'          Call DrowPosition(ws, shapeDict, shapeID, xPos, yPos, redValue, greenValue, blueValue, position)
+'          Call DrowLabel(ws, shapeDict, labelName, xPos, yPos)
+'          Call DrowConnection(ws, ws.Shapes(shapeID), ws.Shapes(labelName))
+'
+'End Sub
 Private Sub DrowShape(configShape As ConfigShapes, configPosition As ConfigPositions, positionString As Variant, Optional delimiter As String = "/")
     Dim ws As Worksheet
-        Dim labelName As String
+    Dim labelName As String
     Dim sheetName As String
     Dim position As String
     Dim shapeID As String
@@ -85,6 +183,8 @@ Private Sub DrowShape(configShape As ConfigShapes, configPosition As ConfigPosit
     Dim existingShapes As Collection
     Dim existingShape As shape
     Dim shp As shape
+    Dim labelShapes As Collection
+    Dim existingLabel As shape
 
     ' 位置情報を分解
     sheetName = Split(positionString, delimiter)(0)
@@ -98,7 +198,6 @@ Private Sub DrowShape(configShape As ConfigShapes, configPosition As ConfigPosit
     ' ConfigPositions から座標と色の情報を取得
     configPosition.AllocateShapeAttribute shapeID, xPos, yPos, redValue, greenValue, blueValue
 
-
     ' 該当シートの確認または作成
     On Error Resume Next
     Set ws = ThisWorkbook.Sheets(sheetName)
@@ -111,7 +210,6 @@ Private Sub DrowShape(configShape As ConfigShapes, configPosition As ConfigPosit
     ' ConfigShapes の設定を取得
     Set shapeDict = configShape.GetConfigShapePosition()
     
-    
     ' すでに描画されているかをチェック
     Set existingShape = Nothing
     For Each shp In existingShapes
@@ -120,20 +218,27 @@ Private Sub DrowShape(configShape As ConfigShapes, configPosition As ConfigPosit
             ' 背景色のみ変更
             shp.Fill.ForeColor.RGB = RGB(redValue, greenValue, blueValue)
             
+            ' ラベルシェイプの存在を確認
+            Set labelShapes = GetAutoShapeListLabel()
+            Set existingLabel = Nothing
+            For Each existingLabel In labelShapes
+                If existingLabel.Name = labelName Then
+                    Exit Sub ' ラベルが存在するため処理を終了
+                End If
+            Next existingLabel
+            
             ' ラベルとコネクタを描画
-            On Error Resume Next ' エラー処理を追加
             Call DrowLabel(ws, shapeDict, labelName, shp.left, shp.top)
             Call DrowConnection(ws, shp, ws.Shapes(labelName))
-            On Error GoTo 0
             
             Exit Sub ' 処理を終了
         End If
     Next shp
           
-          ' positionとlabelを描画し、直線で結ぶ
-          Call DrowPosition(ws, shapeDict, shapeID, xPos, yPos, redValue, greenValue, blueValue, position)
-          Call DrowLabel(ws, shapeDict, labelName, xPos, yPos)
-          Call DrowConnection(ws, ws.Shapes(shapeID), ws.Shapes(labelName))
+    ' positionとlabelを描画し、直線で結ぶ
+    Call DrowPosition(ws, shapeDict, shapeID, xPos, yPos, redValue, greenValue, blueValue, position)
+    Call DrowLabel(ws, shapeDict, labelName, xPos, yPos)
+    Call DrowConnection(ws, ws.Shapes(shapeID), ws.Shapes(labelName))
 
 End Sub
 
@@ -277,8 +382,7 @@ Private Sub DrowStandby(configShape As ConfigShapes, configPosition As ConfigPos
   Next shp
 
 End Sub
-
-Sub AppendTextInLabel(tbl As ListObject, configShape As ConfigShapes)
+Sub AppendTextInLabel(tbl As ListObject, configShape As ConfigShapes, selectedIDs As Collection)
     Dim ws As Worksheet
     Dim row As ListRow
     Dim positions() As String
@@ -331,35 +435,114 @@ Sub AppendTextInLabel(tbl As ListObject, configShape As ConfigShapes)
                 End If
             Next shp
 
-            ' ラベルシェイプが見つからない場合、新規作成
+            ' ラベルシェイプが見つからない場合、新規作成をスキップ
             If labelShape Is Nothing Then
-                ' Positionシェイプの位置を取得
-                On Error Resume Next
-                Set posShape = ws.Shapes(shapeID)
-                On Error GoTo 0
-                
-                If Not posShape Is Nothing Then
-                    ' Positionシェイプの下にラベルを作成
-                    xPos = posShape.left
-                    yPos = posShape.top + posShape.height + 10
-                    Set labelShape = ws.Shapes.AddShape(shapeDict("SHAPE_LABEL_TYPE"), xPos, yPos, shapeDict("SHAPE_LABEL_WIDTH"), shapeDict("SHAPE_LABEL_HEIGHT"))
-                    labelShape.Name = labelName
-                    labelShape.Fill.ForeColor.RGB = RGB(200, 200, 200)
-                    labelShape.TextFrame2.TextRange.Text = ""
-                    labelShape.Line.Visible = msoFalse ' 外周の線を非表示
-                End If
+                ' 次の位置情報にスキップ
+                GoTo ContinueLoop
             End If
 
-            ' ラベルシェイプにテキストを追加
-            If Not labelShape Is Nothing Then
-                If labelShape.TextFrame2.TextRange.Text <> "" Then
-                    labelShape.TextFrame2.TextRange.Text = labelShape.TextFrame2.TextRange.Text & vbCrLf
+            ' selectedIDs と一致するか確認
+            Dim selectedID As Variant
+            For Each selectedID In selectedIDs
+                If row.Range(1).value = selectedID Then
+                    ' ラベルシェイプにテキストを追加
+                    If Not labelShape Is Nothing Then
+                        If labelShape.TextFrame2.TextRange.Text <> "" Then
+                            labelShape.TextFrame2.TextRange.Text = labelShape.TextFrame2.TextRange.Text & vbCrLf
+                        End If
+                        labelShape.TextFrame2.TextRange.Text = labelShape.TextFrame2.TextRange.Text & row.Range(1).value
+                    End If
+                    Exit For
                 End If
-                labelShape.TextFrame2.TextRange.Text = labelShape.TextFrame2.TextRange.Text & row.Range(1).value
-            End If
+            Next selectedID
+
+ContinueLoop:
         Next individualPosition
     Next row
 End Sub
+
+'Sub AppendTextInLabel(tbl As ListObject, configShape As ConfigShapes)
+'    Dim ws As Worksheet
+'    Dim row As ListRow
+'    Dim positions() As String
+'    Dim individualPosition As Variant
+'    Dim sheetName As String
+'    Dim position As String
+'    Dim shapeID As String
+'    Dim labelName As String
+'    Dim labelShape As shape
+'    Dim posShape As shape
+'    Dim shapeDict As Dictionary
+'    Dim xPos As Double
+'    Dim yPos As Double
+'    Dim labelShapes As Collection
+'    Dim shp As shape
+'
+'    ' ConfigShapes の設定を取得
+'    Set shapeDict = configShape.GetConfigShapePosition()
+'
+'    ' テーブルの各行をループ
+'    For Each row In tbl.ListRows
+'        ' addr 列から位置情報を取得
+'        positions = Split(row.Range(tbl.ListColumns("addr").Index).value, ":")
+'
+'        ' それぞれの位置をループ
+'        For Each individualPosition In positions
+'            sheetName = Split(individualPosition, "/")(0)
+'            position = Split(individualPosition, "/")(1)
+'            shapeID = "pos_" & sheetName & "_" & position
+'            labelName = shapeID & "_lbl"
+'
+'            ' シートの取得または作成
+'            On Error Resume Next
+'            Set ws = ThisWorkbook.Sheets(sheetName)
+'            If ws Is Nothing Then
+'                Set ws = ThisWorkbook.Sheets.Add
+'                ws.Name = sheetName
+'            End If
+'            On Error GoTo 0
+'
+'            ' 既存のラベルシェイプリストを取得
+'            Set labelShapes = GetAutoShapeListLabel()
+'
+'            ' 既存のラベルシェイプを探す
+'            Set labelShape = Nothing
+'            For Each shp In labelShapes
+'                If shp.Name = labelName Then
+'                    Set labelShape = shp
+'                    Exit For
+'                End If
+'            Next shp
+'
+'            ' ラベルシェイプが見つからない場合、新規作成
+'            If labelShape Is Nothing Then
+'                ' Positionシェイプの位置を取得
+'                On Error Resume Next
+'                Set posShape = ws.Shapes(shapeID)
+'                On Error GoTo 0
+'
+'                If Not posShape Is Nothing Then
+'                    ' Positionシェイプの下にラベルを作成
+'                    xPos = posShape.left
+'                    yPos = posShape.top + posShape.height + 10
+'                    Set labelShape = ws.Shapes.AddShape(shapeDict("SHAPE_LABEL_TYPE"), xPos, yPos, shapeDict("SHAPE_LABEL_WIDTH"), shapeDict("SHAPE_LABEL_HEIGHT"))
+'                    labelShape.Name = labelName
+'                    labelShape.Fill.ForeColor.RGB = RGB(200, 200, 200)
+'                    labelShape.TextFrame2.TextRange.Text = ""
+'                    labelShape.Line.Visible = msoFalse ' 外周の線を非表示
+'                End If
+'            End If
+'
+'            ' ラベルシェイプにテキストを追加
+'            If Not labelShape Is Nothing Then
+'                If labelShape.TextFrame2.TextRange.Text <> "" Then
+'                    labelShape.TextFrame2.TextRange.Text = labelShape.TextFrame2.TextRange.Text & vbCrLf
+'                End If
+'                labelShape.TextFrame2.TextRange.Text = labelShape.TextFrame2.TextRange.Text & row.Range(1).value
+'            End If
+'        Next individualPosition
+'    Next row
+'End Sub
 '
 'Public Sub AdjustShapeLabelByText(labelShape As shape)
 '    Dim textLines() As String
