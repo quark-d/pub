@@ -1,32 +1,51 @@
+VERSION 5.00
+Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmSelectIDRadio 
+   Caption         =   "ID‚ğ‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢B"
+   ClientHeight    =   1005
+   ClientLeft      =   120
+   ClientTop       =   465
+   ClientWidth     =   5475
+   OleObjectBlob   =   "frmSelectIDRadio.frx":0000
+   StartUpPosition =   1  'ƒI[ƒi[ ƒtƒH[ƒ€‚Ì’†‰›
+End
+Attribute VB_Name = "frmSelectIDRadio"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
 Option Explicit
 
 Private Sub CommandButton1_Click()
     Dim selectedID As String
     Dim ctrl As Control
     
-    ' é¸æŠã•ã‚ŒãŸãƒ©ã‚¸ã‚ªãƒœã‚¿ãƒ³ã‚’ç¢ºèª
+    ' ‘I‘ğ‚³‚ê‚½ƒ‰ƒWƒIƒ{ƒ^ƒ“‚ğŠm”F
     For Each ctrl In Me.Controls
-        If TypeName(ctrl) = "OptionButton" And ctrl.Value = True Then
+        If TypeName(ctrl) = "OptionButton" And ctrl.value = True Then
             selectedID = ctrl.Caption
             Exit For
         End If
     Next ctrl
     
-    ' IDãŒé¸æŠã•ã‚Œã¦ã„ãªã„å ´åˆã®å‡¦ç†
+    ' ID‚ª‘I‘ğ‚³‚ê‚Ä‚¢‚È‚¢ê‡‚Ìˆ—
     If selectedID = "" Then
-        MsgBox "IDãŒé¸æŠã•ã‚Œã¦ã„ã¾ã›ã‚“ã€‚", vbExclamation
+        MsgBox "ID‚ª‘I‘ğ‚³‚ê‚Ä‚¢‚Ü‚¹‚ñB", vbExclamation
         Exit Sub
     End If
     
-    ' UpdateShapesVisibilityã‚’å‘¼ã³å‡ºã™
-    Call UpdateShapesVisibility(selectedID, getIdDict())
+    Call ResetAllSheetTabColors
+    ' UpdateShapesVisibility‚ğŒÄ‚Ño‚·
+    ' Call UpdateShapesVisibility(selectedID, getIdDict())
+    Call EntryPointOne(selectedID)
     
-    ' ãƒ•ã‚©ãƒ¼ãƒ ã‚’é–‰ã˜ã‚‹
+    
+    ' ƒtƒH[ƒ€‚ğ•Â‚¶‚é
     Me.Hide
 End Sub
 
 Private Sub UserForm_Initialize()
     Dim idDict As Object
+    Dim idAddrDict As Scripting.Dictionary
     Dim boardID As Variant
     Dim i As Integer
     Dim radioButtonTop As Integer
@@ -34,35 +53,36 @@ Private Sub UserForm_Initialize()
     Dim formHeight As Integer
     Dim optButton As MSForms.OptionButton
     
-    ' IDè¾æ›¸ã‚’å–å¾—ã™ã‚‹
-    Set idDict = getIdDict() ' IDã‚’å–å¾—ã™ã‚‹é–¢æ•°ã‚’å‘¼ã³å‡ºã™
+    ' ID«‘‚ğæ“¾‚·‚é
+    ' Set idDict = getIdDict() ' ID‚ğæ“¾‚·‚éŠÖ”‚ğŒÄ‚Ño‚·
+    Set idAddrDict = GetIdAddrDictionary() ' ID‚ğæ“¾‚·‚éŠÖ”‚ğŒÄ‚Ño‚·
     
-    ' ãƒ©ã‚¸ã‚ªãƒœã‚¿ãƒ³ã®åˆæœŸåŒ–
+    ' ƒ‰ƒWƒIƒ{ƒ^ƒ“‚Ì‰Šú‰»
     i = 1
-    radioButtonTop = 20 ' ãƒ©ã‚¸ã‚ªãƒœã‚¿ãƒ³ã®ä¸Šã‹ã‚‰ã®ä½ç½®
-    radioButtonHeight = 20 ' ãƒ©ã‚¸ã‚ªãƒœã‚¿ãƒ³ã®é«˜ã•
+    radioButtonTop = 20 ' ƒ‰ƒWƒIƒ{ƒ^ƒ“‚Ìã‚©‚ç‚ÌˆÊ’u
+    radioButtonHeight = 20 ' ƒ‰ƒWƒIƒ{ƒ^ƒ“‚Ì‚‚³
     
-    ' ã™ã¹ã¦ã®ãƒ©ã‚¸ã‚ªãƒœã‚¿ãƒ³ã‚’è¿½åŠ 
-    For Each boardID In idDict.Keys
-        ' ãƒ©ã‚¸ã‚ªãƒœã‚¿ãƒ³ã‚’è¿½åŠ ã™ã‚‹
+    ' ‚·‚×‚Ä‚Ìƒ‰ƒWƒIƒ{ƒ^ƒ“‚ğ’Ç‰Á
+    For Each boardID In idAddrDict.Keys
+        ' ƒ‰ƒWƒIƒ{ƒ^ƒ“‚ğ’Ç‰Á‚·‚é
         Set optButton = Me.Controls.Add("Forms.OptionButton.1", "optBoard" & i, True)
         
-        ' ãƒ©ã‚¸ã‚ªãƒœã‚¿ãƒ³ã®è¨­å®š
+        ' ƒ‰ƒWƒIƒ{ƒ^ƒ“‚Ìİ’è
         optButton.Caption = boardID
         optButton.Visible = True
-        optButton.Top = radioButtonTop
-        optButton.Left = 20
+        optButton.top = radioButtonTop
+        optButton.left = 20
         
-        ' æ¬¡ã®ãƒ©ã‚¸ã‚ªãƒœã‚¿ãƒ³ã®ä½ç½®ã‚’èª¿æ•´
+        ' Ÿ‚Ìƒ‰ƒWƒIƒ{ƒ^ƒ“‚ÌˆÊ’u‚ğ’²®
         radioButtonTop = radioButtonTop + radioButtonHeight + 5
         i = i + 1
     Next boardID
     
-    ' ãƒ•ã‚©ãƒ¼ãƒ ã®é«˜ã•ã‚’èª¿æ•´
-    formHeight = radioButtonTop + 60 ' ãƒ•ã‚©ãƒ¼ãƒ ã®é«˜ã•ã‚’ãƒ©ã‚¸ã‚ªãƒœã‚¿ãƒ³ã®ä½ç½® + OKãƒœã‚¿ãƒ³ã®ä½™ç™½
-    Me.Height = formHeight
+    ' ƒtƒH[ƒ€‚Ì‚‚³‚ğ’²®
+    formHeight = radioButtonTop + 60 ' ƒtƒH[ƒ€‚Ì‚‚³‚ğƒ‰ƒWƒIƒ{ƒ^ƒ“‚ÌˆÊ’u + OKƒ{ƒ^ƒ“‚Ì—]”’
+    Me.height = formHeight
     
-    ' ã‚¤ãƒ™ãƒ³ãƒˆå‡¦ç†ã‚’è¡Œã†ãŸã‚ã«å°‘ã—å¾…ã¤
+    ' ƒCƒxƒ“ƒgˆ—‚ğs‚¤‚½‚ß‚É­‚µ‘Ò‚Â
     DoEvents
 End Sub
 

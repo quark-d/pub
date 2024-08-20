@@ -1,6 +1,33 @@
 Attribute VB_Name = "ExportPDF"
 Option Explicit
 
+Public Sub ExportSheetsWithColorTabsToPDF(Optional colorIndex As Long = 3)
+    Dim ws As Worksheet
+    Dim sheetNames As Collection
+    Set sheetNames = New Collection
+    Dim pdfPath As String
+    
+    ' 指定された色のタブを持つシートをリストに追加
+    For Each ws In ThisWorkbook.Sheets
+        If ws.Tab.colorIndex = colorIndex Then
+            sheetNames.Add ws.Name
+        End If
+    Next ws
+    
+    ' 印刷対象のシートがあるかどうかを確認
+    If sheetNames.Count > 0 Then
+        ' リストを引数として渡してPDFにエクスポート
+        pdfPath = ExportSheetsToPDFWithoutRotation(sheetNames, "output.pdf")
+        
+        ' PDFファイルを開く
+        ThisWorkbook.FollowHyperlink pdfPath
+    Else
+        MsgBox "印刷対象のシートはありません。", vbInformation
+    End If
+End Sub
+
+
+
 'Sub RotateAndExportSheetsToPDF(sheetNames As Collection, outputFileName As String)
 '    Dim ws As Worksheet
 '    Dim shapeArray() As Variant
@@ -388,8 +415,7 @@ Option Explicit
 '
 '    MsgBox "指定されたシートが回転され、PDFとして保存されました。その後、元の状態に復元されました。"
 'End Sub
-
-Sub ExportSheetsToPDFWithoutRotation(sheetNames As Collection, outputFileName As String)
+Function ExportSheetsToPDFWithoutRotation(sheetNames As Collection, outputFileName As String) As String
     Dim ws As Worksheet
     Dim pdfPath As String
     Dim i As Integer
@@ -397,7 +423,7 @@ Sub ExportSheetsToPDFWithoutRotation(sheetNames As Collection, outputFileName As
     Dim sheet As Variant
     
     ' PDF保存先のパスを指定
-    pdfPath = ThisWorkbook.Path & "\"
+    pdfPath = ThisWorkbook.Path & "\" & outputFileName
     
     ' 引数として受け取ったシート名のコレクションを配列に変換
     ReDim selectedSheets(1 To sheetNames.Count)
@@ -415,22 +441,36 @@ Sub ExportSheetsToPDFWithoutRotation(sheetNames As Collection, outputFileName As
             .Zoom = False
             .FitToPagesWide = 1 ' シートを1ページに収める
             .FitToPagesTall = 1 ' シートを1ページに収める
-            '.Orientation = xlLandscape ' 必要に応じて縦向きや横向きを設定
-            .Orientation = xlPortrait
+            .Orientation = xlLandscape ' 必要に応じて縦向きや横向きを設定
+            ' .Orientation = xlPortrait
         End With
+    Next sheet
+    
+    ' 各シートのヘッダーにシート名を設定（太字で表示）
+    For Each sheet In sheetNames
+        Set ws = ThisWorkbook.Sheets(sheet)
+        ws.PageSetup.CenterHeader = "&B" & ws.Name ' 太字(&B)でヘッダーにシート名を設定
     Next sheet
     
     ' 選択したシートをPDFとして保存
     ThisWorkbook.Sheets(selectedSheets).Select
     ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, _
-        Filename:=pdfPath & outputFileName, _
+        Filename:=pdfPath, _
         Quality:=xlQualityStandard, _
         IncludeDocProperties:=True, _
         IgnorePrintAreas:=False, _
         OpenAfterPublish:=False
     
-    MsgBox "指定されたシートがPDFとして " & pdfPath & outputFileName & " に保存されました。"
-End Sub
+    MsgBox "指定されたシートがPDFとして " & pdfPath & " に保存されました。"
+    
+    ' 印刷後にヘッダーをクリア
+    For Each sheet In sheetNames
+        Set ws = ThisWorkbook.Sheets(sheet)
+        ws.PageSetup.CenterHeader = "" ' ヘッダーをクリア
+    Next sheet
+    
+    ExportSheetsToPDFWithoutRotation = pdfPath
+End Function
 
 ' 使用例
 Sub ExampleUsageRotateAndExport()
