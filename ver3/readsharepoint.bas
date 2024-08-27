@@ -76,3 +76,22 @@ Function RetrieveRecordsFromSharePoint() As Collection
     ' コレクションを返す
     Set RetrieveRecordsFromSharePoint = colRecords
 End Function
+
+
+Function FindRecordByID(colRecords As Collection, targetID As String) As Object
+    Dim recordDict As Object
+    Dim i As Integer
+
+    ' コレクション内をループして該当のID_IDを探す
+    For i = 1 To colRecords.Count
+        Set recordDict = colRecords(i)
+        If recordDict("ID_ID") = targetID Then
+            ' 該当のrecordDictを返す
+            Set FindRecordByID = recordDict
+            Exit Function
+        End If
+    Next i
+
+    ' 該当するID_IDがない場合はNothingを返す
+    Set FindRecordByID = Nothing
+End Function
