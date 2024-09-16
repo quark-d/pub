@@ -1,3 +1,13 @@
+' ComboBoxA の MouseDown イベント
+Private Sub cmbBoxA_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
+    ' 左クリック (Button = 1) 右クリック(Button=2) または中央ボタン (Button = 4) で空文字を設定
+    If Button = 2 Or Button = 4 Then
+        cmbBoxA.value = "" ' 空文字を設定
+        ' Call TriggerOutput ' Output関数を呼び出す
+    End If
+End Sub
+
+
 ' リセットボタンが押された時に、cmbBoxAの選択を空文字にリセットしOutput関数を呼び出す
 Private Sub btnResetA_Click()
     cmbBoxA.Value = "" ' 空文字を選択
