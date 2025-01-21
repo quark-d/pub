@@ -1,10 +1,10 @@
 #
 
 ## ChromeDriver
-ChromeDriverは、IWebDriverインターフェースを実装
-IWebDriverはSeleniumの主要なインターフェースで、Webブラウザを操作するための基本的なメソッドを提供
-IWebDriverにはNavigateやFindElementといったメソッドがある。
-ChromeDriverはこれらのメソッドを具体的に実装し、Chromeブラウザを操作できるようにしている。
+ChromeDriverは、IWebDriverインターフェースを実装  
+IWebDriverはSeleniumの主要なインターフェースで、Webブラウザを操作するための基本的なメソッドを提供  
+IWebDriverにはNavigateやFindElementといったメソッドがある。  
+ChromeDriverはこれらのメソッドを具体的に実装し、Chromeブラウザを操作できるようにしている。  
 ```C#
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
