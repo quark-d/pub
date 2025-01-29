@@ -25,7 +25,7 @@ public class DayWork
 
     [Column("weekly_number")]
     [DatabaseGenerated(DatabaseGeneratedOption.Computed)] // SQL Server 側で計算
-    public int WeeklyNumber { get; private set; }  // `computed column` は `set` を `private` にする
+    public int? WeeklyNumber { get; private set; }  // `computed column` は `set` を `private` にする
 }
 ```
 
