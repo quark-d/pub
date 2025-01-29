@@ -1,16 +1,13 @@
-### **✅ C# から **``** を使わずに **``** を設定する方法**
-
-C# から **Entity Framework Core (EF Core) を使って **``** を **``** で自動計算** させる方法はいくつかあります。\
-``** を直接使わずに、C# 側からデータベースを操作する方法を紹介します。**
+### **✅ C# から `CREATE TABLE` を使わずに `DATEPART(WEEK, date)` を設定する方法**
+C# から **Entity Framework Core (EF Core) を使って `weekly_number` を `DATEPART(WEEK, date)` で自動計算** させる方法はいくつかあります。  
+**`CREATE TABLE` を直接使わずに、C# 側からデータベースを操作する方法を紹介します。**
 
 ---
 
-## **🔹 方法①: **``** を使って **``** を設定 (推奨)**
+## **🔹 方法①: `Fluent API` を使って `computed column` を設定 (推奨)**
+EF Core の `Fluent API` を使って、**C# 側で `DATEPART(WEEK, date)` を自動適用する**。
 
-EF Core の `Fluent API` を使って、**C# 側で **``** を自動適用する**。
-
-### **📌 **``** クラス**
-
+### **📌 `DayWork` クラス**
 ```csharp
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -34,8 +31,7 @@ public class DayWork
 
 ---
 
-### **📌 **``** (**``** で **``** を設定)**
-
+### **📌 `DbContext` (`OnModelCreating` で `computed column` を設定)**
 ```csharp
 using Microsoft.EntityFrameworkCore;
 
@@ -58,12 +54,10 @@ public class DayWorkContext : DbContext
 ```
 
 ✅ **特徴**
-
 - `OnModelCreating` の `HasComputedColumnSql("DATEPART(WEEK, date)")` で `weekly_number` を計算列として設定。
-- `CREATE TABLE` を **C# 側から実行せずに **``** を適用可能**。
+- `CREATE TABLE` を **C# 側から実行せずに `computed column` を適用可能**。
 
 ✅ **使用例**
-
 ```csharp
 using System;
 
@@ -85,17 +79,13 @@ class Program
     }
 }
 ```
-
 ✅ **出力結果**
-
 ```
 データを追加しました: ID = 1, Date = 2025-01-09
 ```
-
 （`weekly_number` は SQL Server 側で自動計算）
 
-✅ ``** で取得**
-
+✅ **`SELECT` で取得**
 ```csharp
 using System;
 using System.Linq;
@@ -115,17 +105,14 @@ class Program
     }
 }
 ```
-
 ✅ **出力結果**
-
 ```
 ID: 1, Date: 2025-01-09, WeeklyNumber: 2
 ```
 
 ---
 
-## **🔹 方法②: **``** で **``** を実行**
-
+## **🔹 方法②: `DbContext.Database.ExecuteSqlRaw()` で `ALTER TABLE` を実行**
 C# から `ALTER TABLE` を実行して、`weekly_number` を `DATEPART(WEEK, date)` で自動計算するように設定できます。
 
 ```csharp
@@ -148,14 +135,12 @@ class Program
 ```
 
 ✅ **特徴**
-
 - `CREATE TABLE` を使わずに、C# から `ALTER TABLE` を実行して `computed column` を追加。
 - **データベースを変更できる権限が必要**。
 
 ---
 
-## **🔹 方法③: **``** をオーバーライド**
-
+## **🔹 方法③: `BeforeSaveChanges` をオーバーライド**
 EF Core で `SaveChanges()` をオーバーライドし、C# 側で `weekly_number` を設定する方法もあります。
 
 ```csharp
@@ -196,32 +181,28 @@ public class DayWorkContext : DbContext
 ```
 
 ✅ **特徴**
-
 - `weekly_number` を **C# 側で計算して保存** する。
-- **SQL Server 側での **``** の使用は不要**。
+- **SQL Server 側での `DATEPART(WEEK, date)` の使用は不要**。
 
 ---
 
 ## **🔹 どの方法を選ぶべきか？**
-
-| **方法**                       | **特徴**                      | **メリット**                                | **デメリット**              |
-| ---------------------------- | --------------------------- | --------------------------------------- | ---------------------- |
-| **方法①: Fluent API (**``**)** | `computed column` を C# 側で適用 | SQL Server で `DATEPART(WEEK, date)` を使用 | `UPDATE` 不可            |
-| **方法②: **``                  | `computed column` を後付け      | 既存のDBに適用可能                              | `ALTER TABLE` 実行の権限が必要 |
-| **方法③: **``** をオーバーライド**     | C# 側で `weekly_number` を計算   | SQL Server に依存しない                       | `weekly_number` を手動で設定 |
+| **方法** | **特徴** | **メリット** | **デメリット** |
+|----------|--------|------------|------------|
+| **方法①: Fluent API (`HasComputedColumnSql`)** | `computed column` を C# 側で適用 | SQL Server で `DATEPART(WEEK, date)` を使用 | `UPDATE` 不可 |
+| **方法②: `ExecuteSqlRaw("ALTER TABLE")`** | `computed column` を後付け | 既存のDBに適用可能 | `ALTER TABLE` 実行の権限が必要 |
+| **方法③: `SaveChanges()` をオーバーライド** | C# 側で `weekly_number` を計算 | SQL Server に依存しない | `weekly_number` を手動で設定 |
 
 ✅ **最適な選択**
-
-- **DBのスキーマ変更をC#側で管理したい** → **方法① (**``**)**
-- **既存のDBに**``** を後付けしたい** → **方法② (**``**)**
-- **SQL Server ではなく、C# 側で **``** を設定したい** → **方法③ (**``** をオーバーライド)**
+- **DBのスキーマ変更をC#側で管理したい** → **方法① (`HasComputedColumnSql`)**
+- **既存のDBに`computed column` を後付けしたい** → **方法② (`ExecuteSqlRaw`)**
+- **SQL Server ではなく、C# 側で `weekly_number` を設定したい** → **方法③ (`SaveChanges` をオーバーライド)**
 
 ---
 
 ## **🚀 まとめ**
-
-- ``** を使わずに **``** を適用する方法はある**。
-- **最もシンプルで推奨なのは **``** (**``**) を使う方法**。
-- **既存のDBに適用するなら **``** を使う方法** もあり。
+- **`CREATE TABLE` を使わずに `DATEPART(WEEK, date)` を適用する方法はある**。
+- **最もシンプルで推奨なのは `Fluent API` (`HasComputedColumnSql`) を使う方法**。
+- **既存のDBに適用するなら `ExecuteSqlRaw("ALTER TABLE")` を使う方法** もあり。
 
 この方法で `weekly_number` を `DATEPART(WEEK, date)` で設定できます！ 🚀
