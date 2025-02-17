@@ -9,7 +9,8 @@
                 "-ExecutionPolicy", "Bypass",
                 "-File", "${workspaceFolder}/RunMacro.ps1",
                 "-excelFilePath", "C:/path/to/Sample.xlsm",
-                "-vbaModulePath", "${file}"
+                "-vbaModulePath", "${file}",
+                "-moduleName", "${fileBasename}"
             ],
             "problemMatcher": [],
             "group": {
