@@ -1,9 +1,14 @@
 # RunMacro.ps1
 
 param (
-    [string]$excelFilePath,
-    [string]$vbaModulePath
+    [string]$excelFilePath,  # Excelファイルのパス
+    [string]$vbaModulePath,  # インポートするVBAモジュールのパス
+    [string]$moduleName      # モジュール名（拡張子なし）
 )
+
+Write-Host "Excelファイル: $excelFilePath"
+Write-Host "VBAモジュール: $vbaModulePath"
+Write-Host "モジュール名: $moduleName"
 
 # Excelの起動
 $excel = New-Object -ComObject Excel.Application
@@ -21,7 +26,8 @@ $modules = $vbProject.VBComponents
 
 # 既存の同名モジュールがあれば削除
 foreach ($module in $modules) {
-    if ($module.Name -eq "Module1") {
+    if ($module.Name -eq $moduleName) {
+        Write-Host "既存のモジュール [$moduleName] を削除します。"
         $modules.Remove($module)
         break
     }
@@ -29,6 +35,7 @@ foreach ($module in $modules) {
 
 # モジュールをインポート
 $modules.Import($vbaModulePath)
+Write-Host "モジュール [$moduleName] をインポートしました。"
 
 # 保存して閉じる
 $workbook.Save()
