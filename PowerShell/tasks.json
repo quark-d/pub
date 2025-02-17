@@ -1,0 +1,17 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run Excel Macro",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-File",
+                "${workspaceFolder}/runMacro.ps1",
+                "-ExcelFilePath",
+                "${file}"
+            ],
+            "problemMatcher": []
+        }
+    ]
+}
