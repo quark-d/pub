@@ -24,8 +24,12 @@ $modules = $vbProject.VBComponents
 
 # 既存の同名モジュールがあれば削除
 $existingModule = $null
+
 foreach ($module in $modules) {
-    if ($module.Name -eq $moduleName) {
+    # `InvokeMember` を使って COM オブジェクトの `Name` プロパティを取得
+    $moduleNameFromExcel = $module.GetType().InvokeMember("Name", "GetProperty", $null, $module, $null)
+
+    if ($moduleNameFromExcel -eq $moduleName) {
         $existingModule = $module
         break
     }
