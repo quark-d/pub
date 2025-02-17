@@ -24,11 +24,8 @@ $modules = $vbProject.VBComponents
 
 # 既存の同名モジュールがあれば削除
 $existingModule = $null
-
 foreach ($module in $modules) {
-    # `InvokeMember` を使って COM オブジェクトの `Name` プロパティを取得
     $moduleNameFromExcel = $module.GetType().InvokeMember("Name", "GetProperty", $null, $module, $null)
-
     if ($moduleNameFromExcel -eq $moduleName) {
         $existingModule = $module
         break
@@ -38,7 +35,24 @@ foreach ($module in $modules) {
 if ($existingModule -ne $null) {
     Write-Host "既存のモジュール [$moduleName] を削除します。"
     $modules.Remove($existingModule)
+
+    # 削除が完了するまで待機
+    Start-Sleep -Milliseconds 500
+
+    # 削除が正しく行われたかチェック（リストを再取得）
+    $modules = $vbProject.VBComponents
+    foreach ($module in $modules) {
+        $moduleNameFromExcel = $module.GetType().InvokeMember("Name", "GetProperty", $null, $module, $null)
+        if ($moduleNameFromExcel -eq $moduleName) {
+            Write-Host "警告: モジュール [$moduleName] がまだ存在しています！"
+        }
+    }
 }
+
+# Excelを非表示にして VBA Editor をリフレッシュ
+$excel.Visible = $false
+Start-Sleep -Milliseconds 500
+$excel.Visible = $true
 
 # モジュールをインポート
 $modules.Import($vbaModulePath)
