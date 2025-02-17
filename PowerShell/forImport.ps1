@@ -19,18 +19,21 @@ $workbook = $excel.Workbooks.Open($excelFilePath)
 
 # VBE (VBA Editor) の取得
 $vbe = $excel.VBE
-
-# 現在のVBAプロジェクトのモジュール一覧を取得
 $vbProject = $workbook.VBProject
 $modules = $vbProject.VBComponents
 
 # 既存の同名モジュールがあれば削除
+$existingModule = $null
 foreach ($module in $modules) {
     if ($module.Name -eq $moduleName) {
-        Write-Host "既存のモジュール [$moduleName] を削除します。"
-        $modules.Remove($module)
+        $existingModule = $module
         break
     }
+}
+
+if ($existingModule -ne $null) {
+    Write-Host "既存のモジュール [$moduleName] を削除します。"
+    $modules.Remove($existingModule)
 }
 
 # モジュールをインポート
