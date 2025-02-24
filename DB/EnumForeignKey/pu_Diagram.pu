@@ -1,0 +1,48 @@
+@startuml EnumForeignKey
+' ----------------------------
+' ER Diagram
+' ----------------------------
+' ER 図のスタイル定義
+' skinparam linetype straight ' 直線
+' skinparam linetype curve    ' 曲線
+' skinparam linetype oblique  ' 斜め線
+' skinparam linetype round    ' 線の角を丸くする
+' skinparam linetype ortho    ' 直角線    (デフォルト)
+skinparam linetype polyline ' 折れ線    (直角線と曲線の中間)
+
+left to right direction
+
+entity "Product" as product {
+  + product_id : int <<PK>>
+  --
+  product_name : nchar(10)
+  product_type_id : int <<FK>>
+}
+
+entity "Type" as type {
+  + type_id : int <<PK>>
+  --
+  type_name : nchar(10)
+}
+
+' リレーション定義 (product -> type)
+product::product_type_id }|..|| type::type_id : "FK_product_type"
+
+' ----------------------------
+' Class Diagram
+' ----------------------------
+class Product {
+  + ID : int
+  + Name : string
+  + TypeId : int
+  + Type : TypeEnum
+}
+
+class Type {
+  + ID : int
+  + Name : string
+}
+
+Product::TypeId "1" *--> "1" Type::ID
+
+@enduml
