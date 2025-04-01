@@ -106,3 +106,63 @@ Sub FetchAndParseNestedJsonString()
         Debug.Print "名前: " & m("name") & ", 年齢: " & m("age") & ", 備考: " & m("note")
     Next m
 End Sub
+
+
+Sub FetchAndParseNestedJsonString2()
+    Dim http As Object
+    Dim jsonText As String
+    Dim result As Dictionary
+    Dim team As Dictionary
+    Dim leader As Dictionary
+    Dim memberJson As String
+    Dim members As Collection
+    Dim m As Variant
+
+    ' HTTP通信
+    Set http = CreateObject("MSXML2.XMLHTTP")
+    http.Open "GET", "https://faopfjiaopweijf.free.beeceptor.com/test02"
+    http.Send
+    jsonText = http.responseText
+    Debug.Print jsonText
+    
+    
+    Dim fixedText As String
+    
+    fixedText = jsonText
+    
+    ' 改行やタブを削除（JSON文字列内に混ざってるとパースエラーになる）
+    fixedText = Replace(fixedText, vbCrLf, "")
+    fixedText = Replace(fixedText, vbLf, "")
+    fixedText = Replace(fixedText, vbTab, "")
+    
+    ' "member": "[{ を "member": [{ に置換
+    fixedText = Replace(fixedText, """member"": ""[", """member"": [")
+    ' }]" に見える部分を }], に直す
+    fixedText = Replace(fixedText, "]""", "]")
+    
+    jsonText = fixedText
+    
+    ' 全体のJSONをパース
+    Set result = JsonConverter.ParseJson(jsonText)
+    Set team = result("team")
+
+    ' リーダー情報
+    Set leader = team("leader")
+    Debug.Print "チーム: " & team("name")
+    Debug.Print "リーダー: " & leader("name") & "（" & leader("age") & "歳）"
+
+    ' メンバーのJSON文字列を取り出して、再パース
+'    memberJson = team("member")
+'    Debug.Print memberJson
+'    Set members = JsonConverter.ParseJson(memberJson)
+
+    ' メンバー一覧
+'    For Each m In members
+'        Debug.Print "名前: " & m("name") & ", 年齢: " & m("age") & ", 備考: " & m("note")
+'    Next m
+
+    Set members = team("member")
+    For Each m In members
+        Debug.Print "名前: " & m("name") & ", 年齢: " & m("age") & ", 備考: " & m("note")
+    Next m
+End Sub
