@@ -40,6 +40,8 @@ Sub WriteLargeDataUsingTranspose()
 End Sub
 
 ## 転置を自前で用意する
+VBAで1次元配列を2次元配列に変換して転置し、シートに書き込む
+
 ```vb
 Sub TransposeArray()
     Dim sourceArray() As Variant
