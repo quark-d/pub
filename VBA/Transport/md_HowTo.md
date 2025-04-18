@@ -1,3 +1,8 @@
+# 制限
+
+https://newtonexcelbach.com/2016/01/01/worksheetfunction-transpose-changed-behaviour-in-excel-2013-and-2016/
+
+
 ## チャンクして対応
 ```vb
 Sub WriteLargeDataUsingTranspose()
